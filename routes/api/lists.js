@@ -57,7 +57,8 @@ router.post('/', auth, async (req, res) => {
     $or: [
       { slug },
       { title }
-    ]
+    ],
+    creator: req.user.id
   });
   if (exist) return res.status(400).json({ msg: 'List already exists' });
 
@@ -110,9 +111,8 @@ router.put('/:listId', auth, async (req, res) => {
       }
     }
 
-    const updated = await List.updateOne(list);
-    if (!updated)
-      throw Error('Something went wrong while trying to update the List');
+    const updatedList = await list.save();
+    if (!updatedList) throw Error('Something went wrong saving the List');
 
     res.status(200).json({ success: true });
   } catch (e) {
