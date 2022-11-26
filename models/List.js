@@ -18,6 +18,10 @@ const ListSchema = new Schema({
     type: Array,
     required: false,
   },
+  slug: {
+    type: String,
+    required: true,
+  }
 });
 
 const List = model('list', ListSchema);

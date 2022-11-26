@@ -3,12 +3,15 @@ const { Router } = require('express');
 const User = require('../../models/User');
 // import bcrypt for password hashing
 const bcrypt = require('bcryptjs');
+const List = require('../../models/List');
 
 const router = Router();
 
 // get user
 router.get('/', async (req, res) => {
   try {
+
+    console.log(req.user.id);
 
     const exist = await User.findById(req.user.id).select('-password').select('-_id');
     if (!exist) return res.status(400).json({ msg: 'User not found' });
@@ -53,7 +56,7 @@ router.put('/', async (req, res) => {
     const updatedUser = await user.save();
     if (!updatedUser) throw Error('Something went wrong saving the user');
 
-    res.status(200).json({message: 'User updated'});
+    res.status(200).json({ message: 'User updated' });
   } catch (e) {
     res.status(400).json({ msg: e.message });
   }
@@ -63,6 +66,11 @@ router.put('/', async (req, res) => {
 router.delete('/', async (req, res) => {
 
   try {
+
+    const deleteList = List.deleteMany({ creator: req.user.id });
+    if (!deleteList) throw Error('No Lists');
+
+    await List.deleteMany({ creator: req.user.id });
 
     const user = await User.findById(req.user.id);
     if (!user) throw Error('User does not exist');

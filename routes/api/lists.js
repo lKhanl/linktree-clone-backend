@@ -43,16 +43,23 @@ router.post('/', auth, async (req, res) => {
     return res.status(400).json({ msg: 'Please enter all fields' });
   }
 
+  const slug = title.toLowerCase().replace(/ /g, '-');
+
   const newList = new List({
     desc,
     title,
+    slug,
     creator: req.user.id
   });
 
-
-  // get the list of all lists for the user
-  const Lists = await List.findOne({ title: title }).select('-links');
-  if (Lists) return res.status(400).json({ msg: 'List already exists' });
+  // unique slug and title
+  const exist = await List.findOne({
+    $or: [
+      { slug },
+      { title }
+    ]
+  });
+  if (exist) return res.status(400).json({ msg: 'List already exists' });
 
   try {
 
@@ -72,10 +79,10 @@ router.get('/:username/:title', async (req, res) => {
     const user = await User.findOne({ username: req.params.username });
     if (!user) throw Error('No user found');
 
-    const list = await List.findOne({ creator: user._id, title: req.params.title })
-          .select('-creator')
-          .select('-_id')
-          .select('-__v');
+    const list = await List.findOne({ creator: user._id, slug: req.params.title })
+      .select('-creator')
+      .select('-_id')
+      .select('-__v');
     if (!list) throw Error('No List found');
 
     res.status(200).json(list);
