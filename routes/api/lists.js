@@ -96,46 +96,22 @@ router.get('/:username/:title', async (req, res) => {
 // update a list
 router.put('/:listId', auth, async (req, res) => {
 
-  const { desc, title, url } = req.body;
+  const { desc, title, links, bg } = req.body;
 
   try {
     const list = await List.findById(req.params.listId);
     if (!list) throw Error('No List found');
 
     if (desc) list.desc = desc;
-    if (title && url && list.links.length <= 5) {
-      if (list.links.every(link => link.title !== title)) {
-        list.links.push({ title, url });
-      } else {
-        return res.status(400).json({ msg: 'Link already exists' });
-      }
+    if (title) {
+      list.title = title;
+      list.slug = title.toLowerCase().replace(/ /g, '-');
     }
+    if (bg) list.bg = bg;
+    if (links && typeof(Array)) list.links = links;
 
     const updatedList = await list.save();
     if (!updatedList) throw Error('Something went wrong saving the List');
-
-    res.status(200).json({ success: true });
-  } catch (e) {
-    res.status(400).json({ msg: e.message, success: false });
-  }
-});
-
-// delete a link from a list
-router.delete('/link/:listId/:deleted', auth, async (req, res) => {
-
-  if (!req.params.deleted) {
-    return res.status(400).json({ msg: 'Please enter all fields' });
-  }
-
-  try {
-    const list = await List.findById(req.params.listId);
-    if (!list) throw Error('No List found');
-
-    list.links = list.links.filter(link => link.title !== req.params.deleted);
-
-    const updated = await List.updateOne(list);
-    if (!updated)
-      throw Error('Something went wrong while trying to update the List');
 
     res.status(200).json({ success: true });
   } catch (e) {
