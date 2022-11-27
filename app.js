@@ -10,6 +10,7 @@ const config = require('./config');
 const authRoutes = require('./routes/api/auth');
 const listRoutes = require('./routes/api/lists');
 const userRoutes = require('./routes/api/user');
+const homeRoutes = require('./routes/api/home');
 const auth = require('./middleware/auth');
 
 const { MONGO_URI, MONGO_DB_NAME } = config;
@@ -41,6 +42,7 @@ mongoose
 app.use('/api/lists', listRoutes);
 app.use('/api/user', auth, userRoutes);
 app.use('/auth', authRoutes);
+app.use('/', homeRoutes);
 
 // Serve static assets if in production
 if (process.env.NODE_ENV === 'production') {
